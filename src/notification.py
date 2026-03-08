@@ -879,6 +879,40 @@ class NotificationService(
                             "",
                         ])
                 
+                # ========== 做T预测 ==========
+                day_trade = dashboard.get('day_trade_prediction', {}) if dashboard else {}
+                if day_trade:
+                    bullish_prob = day_trade.get('bullish_probability', 'N/A')
+                    direction = day_trade.get('direction', 'N/A')
+                    candle = day_trade.get('candle_prediction', 'N/A')
+                    reason = day_trade.get('reason', '')
+                    buy_zone = day_trade.get('buy_zone', 'N/A')
+                    sell_zone = day_trade.get('sell_zone', 'N/A')
+                    risk_note = day_trade.get('risk_note', '')
+
+                    # 根据方向选 emoji
+                    if '做多' in str(direction):
+                        dir_emoji = '📈'
+                    elif '做空' in str(direction):
+                        dir_emoji = '📉'
+                    else:
+                        dir_emoji = '⏸️'
+
+                    report_lines.extend([
+                        "### 🕯️ 明日做T预测",
+                        "",
+                        f"**预测K线**: {candle} | **阳线概率**: {bullish_prob}%",
+                        "",
+                        f"{dir_emoji} **方向**: {direction}",
+                        f"💡 *{reason}*",
+                        "",
+                        f"- 📥 买入区间: {buy_zone}",
+                        f"- 📤 卖出区间: {sell_zone}",
+                    ])
+                    if risk_note:
+                        report_lines.append(f"- ⚠️ {risk_note}")
+                    report_lines.append("")
+
                 # ========== 作战计划 ==========
                 battle = dashboard.get('battle_plan', {}) if dashboard else {}
                 if battle:
