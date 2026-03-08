@@ -729,8 +729,6 @@ class NotificationService(
         report_lines = [
             f"# 🎯 {report_date} 决策仪表盘",
             "",
-            f"> 共分析 **{len(results)}** 只股票 | 🟢买入:{buy_count} 🟡观望:{hold_count} 🔴卖出:{sell_count}",
-            "",
         ]
 
         # === 新增：分析结果摘要 (Issue #112) ===
@@ -777,9 +775,6 @@ class NotificationService(
                     # 舆情情绪总结
                     if intel.get('sentiment_summary'):
                         report_lines.append(f"**💭 舆情情绪**: {intel['sentiment_summary']}")
-                    # 业绩预期
-                    if intel.get('earnings_outlook'):
-                        report_lines.append(f"**📊 业绩预期**: {intel['earnings_outlook']}")
                     # 风险警报（醒目显示）
                     risk_alerts = intel.get('risk_alerts', [])
                     if risk_alerts:
@@ -787,45 +782,8 @@ class NotificationService(
                         report_lines.append("**🚨 风险警报**:")
                         for alert in risk_alerts:
                             report_lines.append(f"- {alert}")
-                    # 利好催化
-                    catalysts = intel.get('positive_catalysts', [])
-                    if catalysts:
-                        report_lines.append("")
-                        report_lines.append("**✨ 利好催化**:")
-                        for cat in catalysts:
-                            report_lines.append(f"- {cat}")
-                    # 最新消息
-                    if intel.get('latest_news'):
-                        report_lines.append("")
-                        report_lines.append(f"**📢 最新动态**: {intel['latest_news']}")
                     report_lines.append("")
                 
-                # ========== 核心结论 ==========
-                core = dashboard.get('core_conclusion', {}) if dashboard else {}
-                one_sentence = core.get('one_sentence', result.analysis_summary)
-                time_sense = core.get('time_sensitivity', '本周内')
-                pos_advice = core.get('position_advice', {})
-                
-                report_lines.extend([
-                    "### 📌 核心结论",
-                    "",
-                    f"**{signal_emoji} {signal_text}** | {result.trend_prediction}",
-                    "",
-                    f"> **一句话决策**: {one_sentence}",
-                    "",
-                    f"⏰ **时效性**: {time_sense}",
-                    "",
-                ])
-                # 持仓分类建议
-                if pos_advice:
-                    report_lines.extend([
-                        "| 持仓情况 | 操作建议 |",
-                        "|---------|---------|",
-                        f"| 🆕 **空仓者** | {pos_advice.get('no_position', result.operation_advice)} |",
-                        f"| 💼 **持仓者** | {pos_advice.get('has_position', '继续持有')} |",
-                        "",
-                    ])
-
                 self._append_market_snapshot(report_lines, result)
                 
                 # ========== 数据透视 ==========
@@ -870,14 +828,7 @@ class NotificationService(
                             f"💡 *{vol_data.get('volume_meaning', '')}*",
                             "",
                         ])
-                    # 筹码结构
-                    if chip_data:
-                        chip_health = chip_data.get('chip_health', 'N/A')
-                        chip_emoji = "✅" if chip_health == "健康" else ("⚠️" if chip_health == "一般" else "🚨")
-                        report_lines.extend([
-                            f"**筹码**: 获利比例 {chip_data.get('profit_ratio', 'N/A')} | 平均成本 {chip_data.get('avg_cost', 'N/A')} | 集中度 {chip_data.get('concentration', 'N/A')} {chip_emoji}{chip_health}",
-                            "",
-                        ])
+                    # 筹码结构 - 已隐藏
                 
                 # ========== 做T预测 ==========
                 day_trade = dashboard.get('day_trade_prediction', {}) if dashboard else {}
@@ -1359,15 +1310,7 @@ class NotificationService(
         ])
 
         if "price" in snapshot:
-            raw_source = snapshot.get('source', 'N/A')
-            display_source = self._SOURCE_DISPLAY_NAMES.get(raw_source, raw_source)
-            lines.extend([
-                "",
-                "| 当前价 | 量比 | 换手率 | 行情来源 |",
-                "|-------|------|--------|----------|",
-                f"| {snapshot.get('price', 'N/A')} | {snapshot.get('volume_ratio', 'N/A')} | "
-                f"{snapshot.get('turnover_rate', 'N/A')} | {display_source} |",
-            ])
+            pass  # 不显示实时行情第二行
 
         lines.append("")
 
